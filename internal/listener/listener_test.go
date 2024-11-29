@@ -521,6 +521,10 @@ func TestListener_Stream(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
 	metrics := new(monitorMock)
 
+	users_table_operation_filters := make([]interface{}, 1)
+
+	users_table_operation_filters = append(users_table_operation_filters, "insert")
+
 	tests := []struct {
 		name    string
 		setup   func()
@@ -602,7 +606,7 @@ func TestListener_Stream(t *testing.T) {
 						AckTimeout:        0,
 						HeartbeatInterval: 5 * time.Millisecond,
 						Filter: config.FilterStruct{
-							Tables: map[string][]string{"users": {"insert"}},
+							Tables: map[string][]interface{}{"users": users_table_operation_filters},
 						},
 					},
 					Publisher: &config.PublisherCfg{
@@ -635,7 +639,7 @@ func TestListener_Stream(t *testing.T) {
 						SlotName:          "myslot",
 						AckTimeout:        0,
 						HeartbeatInterval: 1, Filter: config.FilterStruct{
-							Tables: map[string][]string{"users": {"insert"}},
+							Tables: map[string][]interface{}{"users": users_table_operation_filters},
 						},
 					},
 					Publisher: &config.PublisherCfg{
@@ -705,7 +709,7 @@ func TestListener_Stream(t *testing.T) {
 						SlotName:          "myslot",
 						AckTimeout:        0,
 						HeartbeatInterval: 1, Filter: config.FilterStruct{
-							Tables: map[string][]string{"users": {"insert"}},
+							Tables: map[string][]interface{}{"users": users_table_operation_filters},
 						},
 					},
 					Publisher: &config.PublisherCfg{

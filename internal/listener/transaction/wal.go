@@ -115,7 +115,7 @@ func (w *WAL) CreateActionData(
 
 // CreateEventsWithFilter filter WAL message by table,
 // action and create events for each value.
-func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]string) <-chan *publisher.Event {
+func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]interface{}) <-chan *publisher.Event {
 	output := make(chan *publisher.Event)
 
 	go func(ctx context.Context) {
@@ -172,11 +172,13 @@ func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]
 }
 
 // inArray checks whether the value is in an array.
-func inArray(arr []string, value string) bool {
+func inArray(arr []interface{}, value string) bool {
 	for _, v := range arr {
-		if strings.EqualFold(v, value) {
-			return true
+		switch t := v.(type) {
+		case string:
+			strings.EqualFold(t, value)
 		}
+
 	}
 
 	return false

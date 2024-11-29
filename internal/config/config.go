@@ -64,7 +64,7 @@ type DatabaseCfg struct {
 
 // FilterStruct incoming WAL message filter.
 type FilterStruct struct {
-	Tables map[string][]string
+	Tables map[string][]interface{}
 }
 
 // Validate config data.
