@@ -176,9 +176,8 @@ func inArray(arr []interface{}, value string) bool {
 	for _, v := range arr {
 		switch t := v.(type) {
 		case string:
-			strings.EqualFold(t, value)
+			return strings.EqualFold(t, value)
 		}
-
 	}
 
 	return false
