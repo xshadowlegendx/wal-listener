@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ihippik/wal-listener/v2/internal/config"
+	"github.com/ihippik/wal-listener/v2/internal/publisher"
 
 	"github.com/magiconair/properties/assert"
 )
@@ -425,4 +427,39 @@ func TestColumn_AssertValue(t *testing.T) {
 			assert.Equal(t, c, tt.want)
 		})
 	}
+}
+
+func Test_CelFilterCondition(t *testing.T) {
+	t.Run("correctly checks provided condition", func(t *testing.T) {
+		tableFilters := make([]interface{}, 1)
+		tableFilters = append(
+			tableFilters,
+			map[string]string{"operation": "update", "condition": "row.published && row.title.contains('phoenix')"},
+		)
+
+		celAstMap, _ := config.NewCelAstMap(config.FilterStruct{
+			Tables: map[string][]interface{}{
+				"blogs": tableFilters,
+			},
+		})
+
+		event := publisher.Event{
+			ID:     uuid.New(),
+			Schema: "data",
+			Table:  "blogs",
+			Action: "update",
+			Data: map[string]any{
+				"id":        0,
+				"title":     "phoenix rise",
+				"published": true,
+			},
+			EventTime: time.Now(),
+		}
+
+		assert.Equal(t, matchCondition(tableFilters, &event, celAstMap), true)
+
+		event.Data["published"] = false
+
+		assert.Equal(t, matchCondition(tableFilters, &event, celAstMap), false)
+	})
 }
