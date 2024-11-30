@@ -15,6 +15,10 @@ func TestConfig_Validate(t *testing.T) {
 		Database  *DatabaseCfg
 		Publisher *PublisherCfg
 	}
+
+	invalid_advance_filter := make([]interface{}, 1)
+	invalid_advance_filter = append(invalid_advance_filter, map[string]string{"opera": "insert"})
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -125,6 +129,35 @@ func TestConfig_Validate(t *testing.T) {
 				},
 			},
 			wantErr: errors.New("Publisher.Type: non zero value required"),
+		},
+		{
+			name: "invalid advance filter",
+			fields: fields{
+				Logger: &scfg.Logger{
+					Level: "info",
+				},
+				Listener: &ListenerCfg{
+					SlotName:          "slot",
+					AckTimeout:        10,
+					RefreshConnection: 10,
+					HeartbeatInterval: 10,
+					Filter:            FilterStruct{Tables: map[string][]interface{}{"users": invalid_advance_filter}},
+				},
+				Database: &DatabaseCfg{
+					Host:     "host",
+					Port:     10,
+					Name:     "db",
+					User:     "usr",
+					Password: "pass",
+				},
+				Publisher: &PublisherCfg{
+					Type:        "kafka",
+					Address:     "addr",
+					Topic:       "stream",
+					TopicPrefix: "prefix",
+				},
+			},
+			wantErr: errors.New("operation required"),
 		},
 	}
 
