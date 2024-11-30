@@ -64,11 +64,31 @@ type DatabaseCfg struct {
 
 // FilterStruct incoming WAL message filter.
 type FilterStruct struct {
-	Tables map[string][]interface{}
+	Tables map[string][]interface{} `valid:"customFilterStructValidator~operation required"`
 }
 
 // Validate config data.
 func (c Config) Validate() error {
+	govalidator.CustomTypeTagMap.Set("customFilterStructValidator", func(i interface{}, context interface{}) bool {
+		for _, v := range i.(map[string][]interface{}) {
+			for _, vv := range v {
+				switch d := vv.(type) {
+				case string:
+					continue
+
+				case map[string]string:
+					if _, ok := d["operation"]; !ok {
+						return false
+					}
+
+					continue
+				}
+			}
+		}
+
+		return true
+	})
+
 	_, err := govalidator.ValidateStruct(c)
 	return err
 }
