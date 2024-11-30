@@ -7,6 +7,7 @@ require (
 	github.com/IBM/sarama v1.43.3
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/goccy/go-json v0.10.3
+	github.com/google/cel-go v0.22.1
 	github.com/google/uuid v1.6.0
 	github.com/ihippik/config v0.3.2
 	github.com/jackc/pgx v3.6.2+incompatible
@@ -22,11 +23,13 @@ require (
 )
 
 require (
+	cel.dev/expr v0.18.0 // indirect
 	cloud.google.com/go v0.115.1 // indirect
 	cloud.google.com/go/auth v0.9.4 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.1 // indirect
 	cloud.google.com/go/iam v1.2.1 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
@@ -81,6 +84,7 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
