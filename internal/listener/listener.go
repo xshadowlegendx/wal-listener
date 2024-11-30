@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/google/cel-go/cel"
 	"github.com/jackc/pgx"
 	"golang.org/x/sync/errgroup"
 
@@ -69,6 +70,7 @@ type Listener struct {
 	parser     parser
 	lsn        uint64
 	isAlive    atomic.Bool
+	celAstMap  *map[string]cel.Program
 }
 
 var (
@@ -86,6 +88,7 @@ func NewWalListener(
 	pub eventPublisher,
 	parser parser,
 	monitor monitor,
+	celAstMap *map[string]cel.Program,
 ) *Listener {
 	return &Listener{
 		log:        log,
@@ -95,6 +98,7 @@ func NewWalListener(
 		repository: repo,
 		replicator: repl,
 		parser:     parser,
+		celAstMap:  celAstMap,
 	}
 }
 
@@ -358,7 +362,7 @@ func (l *Listener) processMessage(ctx context.Context, msg *pgx.ReplicationMessa
 	}
 
 	if txWAL.CommitTime != nil {
-		for event := range txWAL.CreateEventsWithFilter(ctx, l.cfg.Listener.Filter.Tables) {
+		for event := range txWAL.CreateEventsWithFilter(ctx, l.cfg.Listener.Filter.Tables, l.celAstMap) {
 			subjectName := event.SubjectName(l.cfg)
 
 			if err := l.publisher.Publish(ctx, subjectName, event); err != nil {

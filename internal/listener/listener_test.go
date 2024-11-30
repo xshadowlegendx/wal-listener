@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/cel-go/cel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
 	"github.com/stretchr/testify/assert"
@@ -987,6 +988,7 @@ func TestListener_Process(t *testing.T) {
 				pub,
 				parser,
 				monitor,
+				&map[string]cel.Program{},
 			)
 
 			err := l.Process(ctx)

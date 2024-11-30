@@ -50,6 +50,11 @@ func main() {
 				return fmt.Errorf("validate config: %w", err)
 			}
 
+			celAstMap, err := config.NewCelAstMap(cfg.Listener.Filter)
+			if err != nil {
+				return fmt.Errorf("fail to compile google cel: %w", err)
+			}
+
 			if err = scfg.InitSentry(cfg.Monitoring.SentryDSN, version); err != nil {
 				return fmt.Errorf("init sentry: %w", err)
 			}
@@ -82,6 +87,7 @@ func main() {
 				pub,
 				transaction.NewBinaryParser(logger, binary.BigEndian),
 				config.NewMetrics(),
+				celAstMap,
 			)
 
 			go svc.InitHandlers(ctx)

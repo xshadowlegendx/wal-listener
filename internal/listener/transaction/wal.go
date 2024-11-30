@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/cel-go/cel"
 	"github.com/google/uuid"
 
 	"github.com/ihippik/wal-listener/v2/internal/publisher"
@@ -115,7 +116,7 @@ func (w *WAL) CreateActionData(
 
 // CreateEventsWithFilter filter WAL message by table,
 // action and create events for each value.
-func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]interface{}) <-chan *publisher.Event {
+func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]interface{}, celAstMap *map[string]cel.Program) <-chan *publisher.Event {
 	output := make(chan *publisher.Event)
 
 	go func(ctx context.Context) {
@@ -150,7 +151,8 @@ func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]
 			actions, validTable := tableMap[item.Table]
 
 			validAction := inArray(actions, item.Kind.string())
-			if validTable && validAction {
+			validCondition := matchCondition(actions, event, celAstMap)
+			if validTable && validAction && validCondition {
 				output <- event
 				continue
 			}
@@ -171,12 +173,40 @@ func (w *WAL) CreateEventsWithFilter(ctx context.Context, tableMap map[string][]
 	return output
 }
 
+// check row filter condition
+func matchCondition(arr []interface{}, event *publisher.Event, celAstMap *map[string]cel.Program) bool {
+	for _, v := range arr {
+		switch d := v.(type) {
+		case string:
+			return true
+		case map[string]string:
+			op, _ := d["operation"]
+
+			if celProg, ok := (*celAstMap)[event.Table+"."+op]; ok {
+				result, _, err := celProg.Eval(map[string]interface{}{
+					"row": event.Data,
+				})
+				if err != nil {
+					return false
+				}
+
+				return result.Value().(bool)
+			}
+		}
+	}
+
+	return true
+}
+
 // inArray checks whether the value is in an array.
 func inArray(arr []interface{}, value string) bool {
 	for _, v := range arr {
-		switch t := v.(type) {
+		switch d := v.(type) {
 		case string:
-			return strings.EqualFold(t, value)
+			return strings.EqualFold(d, value)
+		case map[string]string:
+			op, _ := d["operation"]
+			return strings.EqualFold(op, value)
 		}
 	}
 
